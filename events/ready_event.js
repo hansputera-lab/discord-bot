@@ -1,11 +1,11 @@
 /** @typedef {import('eris').CommandClient} CommandClient */
 
 /**
- * Ready event bot initializer.
+ * ready event bot initializer.
  * @param {CommandClient} bot Eris.CommandClient instance.
  * @return {Promise<void>}
  */
-export default async function readyEvent(bot) {
+export default async function ready(bot) {
 	bot.on('ready', async () => {
 		bot.editStatus('dnd', {
 			name: 'w/ filo!',
@@ -13,10 +13,5 @@ export default async function readyEvent(bot) {
 		});
 
 		console.log(bot.user.username, 'is ready');
-
-                console.log(await bot.createCommand({
-                  name: 'help',
-                  description: 'asdsadads',
-                }));
 	});
 }
