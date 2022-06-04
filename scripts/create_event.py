@@ -29,7 +29,7 @@ if len(args) < 1:
     print('Invalid args!')
     sys.exit(0)
 
-name = get_item(args, 0).lower()
+name = get_item(args, 0)
 filePath = path.join(getcwd(), "events", f"{name}_event.js")
 
 if not path.exists(filePath) and path.isdir(path.join(getcwd(), "events")):
