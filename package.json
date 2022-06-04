@@ -1,0 +1,27 @@
+{
+  "name": "hanspoetra-discord-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint \"**/*.js\" --fix",
+    "format": "prettier . --write",
+    "start": "node ."
+  },
+  "keywords": [
+    "discord-bot",
+    "hansputera_discord-bot"
+  ],
+  "author": "Hanif Dwy Putra S <hanifdwyputrasembiring@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.17.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "^2.6.2"
+  },
+  "type": "module",
+  "dependencies": {
+    "eris": "^0.17.0"
+  }
+}
