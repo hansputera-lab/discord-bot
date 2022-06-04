@@ -32,3 +32,37 @@ export const eventLoader = async (bot, eventsPath) => {
 		}
 	}
 };
+
+/**
+ * Command Loader
+ * @param {CommandClient} bot Eris.CommandClient instance.
+ * @param {string} commandsPath commandsPath dir.
+ * @return {Promise<void>}
+ */
+export const commandLoader = async (bot, commandsPath) => {
+	const st = await fs.promises.stat(commandsPath);
+	if (!st.isDirectory())
+		throw new TypeError("'commandsPath' must be directory!");
+	else {
+		for (const fl of await fs.promises.readdir(commandsPath)) {
+			if (!fl.endsWith('.js')) {
+				// do nothin'
+			}
+
+			const statFl = await fs.promises.stat(
+				path.resolve(commandsPath, fl),
+			);
+			if (statFl.isDirectory()) {
+				commandLoader(path.resolve(commandsPath, fl));
+			} else {
+				let fli = await import(path.resolve(commandsPath, fl)).catch(
+					() => undefined,
+				);
+				if (typeof fli !== 'undefined' && fli.default) {
+					fli = new fli.default(bot);
+					bot.commands[fli.label] = fli;
+				}
+			}
+		}
+	}
+};
