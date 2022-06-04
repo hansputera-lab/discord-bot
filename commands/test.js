@@ -9,14 +9,14 @@ import { ErisCommand } from '../command.js';
 export default class TestCommand extends ErisCommand {
 	/**
 	 * @constructor
-         * @param {CommandClient} bot Eris.CommandClient instance.
+	 * @param {CommandClient} bot Eris.CommandClient instance.
 	 */
 	constructor(bot) {
 		super(bot, 'test', {
 			aliases: ['tes', 'tesdoang'],
 		});
 
-                this.setGenerator(this.exec.bind(this));
+		this.setGenerator(this.exec.bind(this));
 	}
 
 	/**

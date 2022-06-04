@@ -5,14 +5,14 @@ import { Command } from 'eris';
  */
 export class ErisCommand extends Command {
 	/**
-         * @param {import('eris').CommandClient} bot Eris.CommandClient instance.
+	 * @param {import('eris').CommandClient} bot Eris.CommandClient instance.
 	 * @param {string} label Command name/label.
 	 * @param {Object} options Eris.Command options.
 	 * @constructor
 	 */
 	constructor(bot, label, options) {
 		super(label, 'This is a default message!', options);
-                this.bot = bot;
+		this.bot = bot;
 	}
 
 	/**
