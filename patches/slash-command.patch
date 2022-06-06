@@ -1,0 +1,236 @@
+commit b339b57c3536917d495371a61b49a281356a430a
+Author: Hanif Dwy Putra S <hanifdwyputrasembiring@gmail.com>
+Date:   Mon Jun 6 11:17:01 2022 +0700
+
+    feat: completed slash command
+    
+    Signed-off-by: Hanif Dwy Putra S <hanifdwyputrasembiring@gmail.com>
+
+diff --git a/bot.js b/bot.js
+index 42ddcec..b056fe3 100644
+--- a/bot.js
++++ b/bot.js
+@@ -13,6 +13,7 @@ export const createBot = (token, options, commandOptions) =>
+ 		{
+ 			...options,
+ 			defaultImageFormat: 'png',
++			restMode: true,
+ 		},
+ 		{
+ 			...commandOptions,
+diff --git a/commands/test.js b/commands/test.js
+index 1e865a0..f2cbc52 100644
+--- a/commands/test.js
++++ b/commands/test.js
+@@ -1,6 +1,6 @@
+-import { ErisCommand } from '../command.js';
++import { ErisCommand } from '../extends/command.js';
+ 
+-/** @typedef {import('eris').Message} Message */
++/** @typedef {import('../extends/message.js').ErisMessage} Message */
+ /** @typedef {import('eris').CommandClient} CommandClient */
+ 
+ /**
+@@ -14,6 +14,7 @@ export default class TestCommand extends ErisCommand {
+ 	constructor(bot) {
+ 		super(bot, 'test', {
+ 			aliases: ['tes', 'tesdoang'],
++			description: 'Ehehehehe',
+ 		});
+ 
+ 		this.setGenerator(this.exec.bind(this));
+@@ -21,10 +22,10 @@ export default class TestCommand extends ErisCommand {
+ 
+ 	/**
+ 	 * Execute command.
+-	 * @param {Message} msg Message instance.
++	 * @param {ErisMessage} msg Message instance.
+ 	 * @return {Promise<void>}
+ 	 */
+ 	async exec(msg) {
+-		await this.bot.createMessage(msg.channel.id, 'Test success');
++		await msg.reply('test success');
+ 	}
+ }
+diff --git a/events/interactioncreate_event.js b/events/interactioncreate_event.js
+index 1c5a6c9..a7377f1 100644
+--- a/events/interactioncreate_event.js
++++ b/events/interactioncreate_event.js
+@@ -1,3 +1,5 @@
++import { CommandInteraction } from 'eris';
++
+ /** @typedef {import('eris').CommandClient} CommandClient */
+ 
+ /**
+@@ -7,7 +9,21 @@
+  */
+ export default async function interactioncreate(bot) {
+ 	bot.on('interactionCreate', async (interaction) => {
+-		console.log(interaction);
+-		console.log(bot.commands);
++		if (interaction instanceof CommandInteraction) {
++			await interaction.defer();
++			const command = bot.commands[interaction.data.name];
++			if (command) {
++				const m = await interaction.getOriginalMessage();
++				m.interaction = {
++					...m.interaction,
++					token: interaction.token,
++					appID: interaction.applicationID,
++				};
++
++				command.executeCommand(m, []);
++			} else {
++				await interaction.deleteMessage();
++			}
++		}
+ 	});
+ }
+diff --git a/events/ready_event.js b/events/ready_event.js
+index f8c34d9..814b4ac 100644
+--- a/events/ready_event.js
++++ b/events/ready_event.js
+@@ -13,5 +13,12 @@ export default async function ready(bot) {
+ 		});
+ 
+ 		console.log(bot.user.username, 'is ready');
++		const commands = bot.commands;
++		Object.keys(commands).forEach((command) => {
++			bot.createCommand({
++				name: command,
++				description: command.description || `${command} command`,
++			});
++		});
+ 	});
+ }
+diff --git a/command.js b/extends/command.js
+similarity index 76%
+rename from command.js
+rename to extends/command.js
+index a6ddc61..f84cb01 100644
+--- a/command.js
++++ b/extends/command.js
+@@ -1,4 +1,5 @@
+-import { Command } from 'eris';
++import { Command, Message } from 'eris';
++import { ErisMessage } from './message.js';
+ 
+ /**
+  * @class ErisCommand
+@@ -11,7 +12,20 @@ export class ErisCommand extends Command {
+ 	 * @constructor
+ 	 */
+ 	constructor(bot, label, options) {
+-		super(label, 'This is a default message!', options);
++		super(label, 'This is a default message!', {
++			description: `${label} command`,
++			...options,
++		});
++		this.hooks = {
++			...this.hooks,
++			postCheck: async (msg, args) => {
++				return {
++					msg: new ErisMessage(msg),
++					args: args,
++				};
++			},
++		};
++
+ 		this.bot = bot;
+ 	}
+ 
+@@ -21,6 +35,7 @@ export class ErisCommand extends Command {
+ 	 * @return {void}
+ 	 */
+ 	setGenerator(value) {
++		this.response = undefined;
+ 		// src: https://github.com/abalabahaha/eris/blob/dev/lib/command/Command.js#L164
+ 		if (typeof value === 'string') {
+ 			this.response = value;
+diff --git a/extends/message.js b/extends/message.js
+new file mode 100644
+index 0000000..f865330
+--- /dev/null
++++ b/extends/message.js
+@@ -0,0 +1,55 @@
++/** @typedef {import('eris').Client} Client */
++/** @typedef {import('eris').Message} Message */
++
++/**
++ * @class ErisMessage
++ */
++export class ErisMessage {
++	/**
++	 * @param {Message} data Message instance.
++	 */
++	constructor(data) {
++		this.message = data.message ? data.message : data;
++	}
++
++	/**
++	 * Reply to message.
++	 * @param {*} content message content data.
++	 * @param {*} data reply data.
++	 * @return {Promise<Message>}
++	 */
++	async reply(content, ...data) {
++		if (
++			this.message.interaction &&
++			this.message.author.id === this.message._client.user.id
++		) {
++			return this.message._client.editWebhookMessage(
++				this.message.interaction.appID,
++				this.message.interaction.token,
++				'@original',
++			        typeof content === 'string' ? {
++                                  ...data,
++                                  content,
++                                } : content,
++			);
++		} else {
++			return this.message._client.createMessage(
++				this.message.channel.id,
++				typeof content === 'string'
++					? {
++							content,
++							messageReference: {
++								messageID: this.message.id,
++							},
++					  }
++					: {
++							...content,
++							messageReference: {
++								messageID: this.message.id,
++							},
++					  },
++				...data,
++			);
++		}
++	}
++}
+diff --git a/loader.js b/loader.js
+index 7c9bf13..74c860b 100644
+--- a/loader.js
++++ b/loader.js
+@@ -15,9 +15,7 @@ export const eventLoader = async (bot, eventsPath) => {
+ 		throw new TypeError("'eventsPath' must be directory!");
+ 	else {
+ 		for (const fl of await fs.promises.readdir(eventsPath)) {
+-			if (!fl.endsWith('.js')) {
+-				// do nothin'
+-			}
++			if (!fl.endsWith('.js')) return;
+ 			const stFl = await fs.promises.stat(path.resolve(eventsPath, fl));
+ 			if (stFl.isDirectory()) {
+ 				eventLoader(path.resolve(eventsPath, fl));
+@@ -45,9 +43,7 @@ export const commandLoader = async (bot, commandsPath) => {
+ 		throw new TypeError("'commandsPath' must be directory!");
+ 	else {
+ 		for (const fl of await fs.promises.readdir(commandsPath)) {
+-			if (!fl.endsWith('.js')) {
+-				// do nothin'
+-			}
++			if (!fl.endsWith('.js')) return;
+ 
+ 			const statFl = await fs.promises.stat(
+ 				path.resolve(commandsPath, fl),
