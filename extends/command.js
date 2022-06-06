@@ -1,4 +1,5 @@
-import { Command } from 'eris';
+import { Command, Message } from 'eris';
+import { ErisMessage } from './message.js';
 
 /**
  * @class ErisCommand
@@ -11,7 +12,20 @@ export class ErisCommand extends Command {
 	 * @constructor
 	 */
 	constructor(bot, label, options) {
-		super(label, 'This is a default message!', options);
+		super(label, 'This is a default message!', {
+			description: `${label} command`,
+			...options,
+		});
+		this.hooks = {
+			...this.hooks,
+			postCheck: async (msg, args) => {
+				return {
+					msg: new ErisMessage(msg),
+					args: args,
+				};
+			},
+		};
+
 		this.bot = bot;
 	}
 
@@ -21,6 +35,7 @@ export class ErisCommand extends Command {
 	 * @return {void}
 	 */
 	setGenerator(value) {
+		this.response = undefined;
 		// src: https://github.com/abalabahaha/eris/blob/dev/lib/command/Command.js#L164
 		if (typeof value === 'string') {
 			this.response = value;

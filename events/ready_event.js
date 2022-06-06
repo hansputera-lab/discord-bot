@@ -13,5 +13,12 @@ export default async function ready(bot) {
 		});
 
 		console.log(bot.user.username, 'is ready');
+		const commands = bot.commands;
+		Object.keys(commands).forEach((command) => {
+			bot.createCommand({
+				name: command,
+				description: command.description || `${command} command`,
+			});
+		});
 	});
 }

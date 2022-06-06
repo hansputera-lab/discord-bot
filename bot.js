@@ -13,6 +13,7 @@ export const createBot = (token, options, commandOptions) =>
 		{
 			...options,
 			defaultImageFormat: 'png',
+			restMode: true,
 		},
 		{
 			...commandOptions,

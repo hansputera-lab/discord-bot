@@ -15,9 +15,7 @@ export const eventLoader = async (bot, eventsPath) => {
 		throw new TypeError("'eventsPath' must be directory!");
 	else {
 		for (const fl of await fs.promises.readdir(eventsPath)) {
-			if (!fl.endsWith('.js')) {
-				// do nothin'
-			}
+			if (!fl.endsWith('.js')) return;
 			const stFl = await fs.promises.stat(path.resolve(eventsPath, fl));
 			if (stFl.isDirectory()) {
 				eventLoader(path.resolve(eventsPath, fl));
@@ -45,9 +43,7 @@ export const commandLoader = async (bot, commandsPath) => {
 		throw new TypeError("'commandsPath' must be directory!");
 	else {
 		for (const fl of await fs.promises.readdir(commandsPath)) {
-			if (!fl.endsWith('.js')) {
-				// do nothin'
-			}
+			if (!fl.endsWith('.js')) return;
 
 			const statFl = await fs.promises.stat(
 				path.resolve(commandsPath, fl),

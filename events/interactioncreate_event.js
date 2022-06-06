@@ -1,3 +1,5 @@
+import { CommandInteraction } from 'eris';
+
 /** @typedef {import('eris').CommandClient} CommandClient */
 
 /**
@@ -7,7 +9,21 @@
  */
 export default async function interactioncreate(bot) {
 	bot.on('interactionCreate', async (interaction) => {
-		console.log(interaction);
-		console.log(bot.commands);
+		if (interaction instanceof CommandInteraction) {
+			await interaction.defer();
+			const command = bot.commands[interaction.data.name];
+			if (command) {
+				const m = await interaction.getOriginalMessage();
+				m.interaction = {
+					...m.interaction,
+					token: interaction.token,
+					appID: interaction.applicationID,
+				};
+
+				command.executeCommand(m, []);
+			} else {
+				await interaction.deleteMessage();
+			}
+		}
 	});
 }

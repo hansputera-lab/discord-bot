@@ -1,6 +1,6 @@
-import { ErisCommand } from '../command.js';
+import { ErisCommand } from '../extends/command.js';
 
-/** @typedef {import('eris').Message} Message */
+/** @typedef {import('../extends/message.js').ErisMessage} Message */
 /** @typedef {import('eris').CommandClient} CommandClient */
 
 /**
@@ -14,6 +14,7 @@ export default class TestCommand extends ErisCommand {
 	constructor(bot) {
 		super(bot, 'test', {
 			aliases: ['tes', 'tesdoang'],
+			description: 'Ehehehehe',
 		});
 
 		this.setGenerator(this.exec.bind(this));
@@ -21,10 +22,10 @@ export default class TestCommand extends ErisCommand {
 
 	/**
 	 * Execute command.
-	 * @param {Message} msg Message instance.
+	 * @param {ErisMessage} msg Message instance.
 	 * @return {Promise<void>}
 	 */
 	async exec(msg) {
-		await this.bot.createMessage(msg.channel.id, 'Test success');
+		await msg.reply('test success');
 	}
 }
